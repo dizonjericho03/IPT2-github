@@ -1,0 +1,74 @@
+if (isset($_POST['submit'])) {
+  $fname = mysqli_real_escape_string ($conn,$_POST['user_firstname']);
+  $lname = mysqli_real_escape_string ($conn, $_POST['user_lastname']);
+  $email = mysqli_real_escape_string ($conn, $_POST['user_email']);
+  $facility = mysqli_real_escape_string ($conn, $_POST['facility_name']);
+  $password = mysqli_real_escape_string ($conn, md5($_POST['password']));
+  $cpassword = mysqli_real_escape_string ($conn, md5($_POST['cpassword']));
+  $terms_of_service = $_POST['terms_of_service'];
+
+  $check_query = mysqli_query($conn, "SELECT * FROM users where user_email ='$email'");
+        $rowCount = mysqli_num_rows($check_query);
+
+  if(!empty($email) && !empty($password)){
+     if($rowCount > 0){
+       ?>
+       <script>
+          alert("User with email already exist!");
+       </script>
+       <?php
+  }else if($password !== $cpassword){
+        ?>
+       <script>
+         alert("password not match");
+       </script>
+        <?php
+  }else{
+
+  $result = mysqli_query($conn, "INSERT INTO users (user_firstname, user_lastname, user_email, password, facility_name, terms_of_service, status)
+        VALUES ('$fname', '$lname','$email', '$password', '$facility', 'I agree', 0)");
+    
+  if($result){
+     $otp = rand(100000,999999);
+     $_SESSION['otp'] = $otp;
+     $_SESSION['mail'] = $email;
+     require "Mail/phpmailer/PHPMailerAutoload.php";
+     $mail = new PHPMailer;
+    
+     $mail->isSMTP();
+     $mail->Host='smtp.gmail.com';
+     $mail->Port=587;
+     $mail->SMTPAuth=true;
+     $mail->SMTPSecure='tls';
+    
+     $mail->Username='bloodsearch4@gmail.com';
+     $mail->Password='Admin0437';
+    
+     $mail->setFrom('bloodsearch4@gmail.com', 'Blood Search');
+     $mail->addAddress($_POST["user_email"]);
+    
+     $mail->isHTML(true);
+     $mail->Subject="Your verification code";
+     $mail->Body="<p>Dear $fname $lname </p> <h3>Your OTP code is $otp <br></h3>
+            <br><br>
+            <p>With regrads,</p>
+            <b>BloodSearch Team</b>";
+    
+     if(!$mail->send()){
+        ?>
+        <script>
+         alert("<?php echo "Register Failed, Invalid Email "?>");
+        </script>
+        <?php
+     }else{
+        ?>
+        <script>
+          alert("<?php echo "Register Successfully, OTP sent to " . $email ?>");
+            window.location.replace('verification.php');
+        </script>
+        <?php
+        }
+      }
+    }
+  }         
+}
