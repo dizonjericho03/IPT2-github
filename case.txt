@@ -1,0 +1,16 @@
+git clone
+git pull
+git push
+git fetch
+git merge
+Issue
+Pull Request
+Milestone
+Branch
+press "i" (i for insert)
+write your merge message
+press "esc" (escape)
+write ":wq" (write & quit)
+then press enter
+
+git push origin HEAD:branchname
